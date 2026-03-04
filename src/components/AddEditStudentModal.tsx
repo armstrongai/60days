@@ -47,6 +47,8 @@ export const AddEditStudentModal: FC<Props> = ({
   initialStudent,
 }) => {
   const [initials, setInitials] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [schoolName, setSchoolName] = useState('')
   const [studentId, setStudentId] = useState('')
   const [grade, setGrade] = useState<Grade>('K')
   const [evaluationType, setEvaluationType] = useState<'Initial' | 'Re-eval'>(
@@ -72,6 +74,8 @@ export const AddEditStudentModal: FC<Props> = ({
     if (open) {
       if (initialStudent) {
         setInitials(initialStudent.initials ?? '')
+        setFullName(initialStudent.fullName ?? '')
+        setSchoolName(initialStudent.schoolName ?? '')
         setStudentId(initialStudent.studentId ?? '')
         setGrade(initialStudent.grade)
         setEvaluationType(initialStudent.evaluationType)
@@ -87,6 +91,8 @@ export const AddEditStudentModal: FC<Props> = ({
         setNotes(initialStudent.notes ?? '')
       } else {
         setInitials('')
+        setFullName('')
+        setSchoolName('')
         setStudentId('')
         setGrade('K')
         setEvaluationType('Initial')
@@ -135,6 +141,8 @@ export const AddEditStudentModal: FC<Props> = ({
 
     const payload = {
       initials: initials.trim(),
+      fullName: fullName.trim() || undefined,
+      schoolName: schoolName.trim() || undefined,
       studentId: studentId.trim() || undefined,
       grade,
       evaluationType,
@@ -172,8 +180,7 @@ export const AddEditStudentModal: FC<Props> = ({
                 {initialStudent ? 'Edit student' : 'Add student'}
               </h2>
               <p className="mt-0.5 text-xs text-slate-600">
-                Use initials or a campus ID only. Do not enter full names
-                (FERPA/privacy).
+                Add full name and/or initials. Data stays on this device only.
               </p>
             </div>
             <button
@@ -188,10 +195,22 @@ export const AddEditStudentModal: FC<Props> = ({
           <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
+                <label className="text-xs font-medium text-slate-700">
+                  Full name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                  placeholder="e.g. Maria Thompson"
+                />
+              </div>
+              <div>
                 <label className="flex items-center justify-between text-xs font-medium text-slate-700">
-                  <span>Student initials or ID</span>
+                  <span>Initials</span>
                   <span className="text-[11px] font-normal text-slate-500">
-                    e.g. M.T. or campus ID
+                    e.g. M.T.
                   </span>
                 </label>
                 <input
@@ -200,6 +219,20 @@ export const AddEditStudentModal: FC<Props> = ({
                   onChange={(e) => setInitials(e.target.value.toUpperCase())}
                   className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                   required
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-medium text-slate-700">
+                  School name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                  placeholder="e.g. Lincoln Elementary"
                 />
               </div>
               <div>

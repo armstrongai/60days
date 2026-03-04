@@ -55,10 +55,13 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
             return (
               <tr key={s.id} className="hover:bg-slate-50/80">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-slate-900">{s.initials}</div>
+                  <div className="font-medium text-slate-900">
+                    {s.fullName?.trim() || s.initials}
+                  </div>
                   <div className="text-xs text-slate-600">
                     {s.studentId ? `ID ${s.studentId} · ` : ''}
                     {s.grade}
+                    {s.schoolName?.trim() && ` · ${s.schoolName}`}
                   </div>
                 </td>
                 <td className="px-3 py-3">

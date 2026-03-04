@@ -39,6 +39,8 @@ export type DisabilityArea =
 export interface StudentRecord {
   id?: number
   initials: string
+  fullName?: string
+  schoolName?: string
   studentId?: string
   grade: Grade
   evaluationType: EvaluationType
