@@ -26,13 +26,14 @@ export type Stage =
 
 export type DisabilityArea =
   | 'LD'
-  | 'OHI'
+  | 'OHI - Medical'
+  | 'OHI - ADHD'
   | 'Autism'
   | 'ED'
   | 'Speech'
   | 'ID'
-  | 'Visual'
-  | 'Hearing'
+  | 'Visual Impairment'
+  | 'Deaf/Hard of Hearing'
   | 'Other'
 
 export interface StudentRecord {
@@ -41,13 +42,24 @@ export interface StudentRecord {
   studentId?: string
   grade: Grade
   evaluationType: EvaluationType
-  referralDate: string
+  /** Required for Initial; optional for Re-eval (deadline can vary). */
+  referralDate?: string
+  /** For Re-eval: manual due date when timeline doesn't follow 45 school days. */
+  customDueDate?: string | null
+  /** Extra school days to add (e.g. absences). FIIE due = 45 + absenceDays school days from referral. */
+  absenceDays?: number
   consentDate?: string | null
   evaluationDate?: string | null
   stage: Stage
   disabilityAreas: DisabilityArea[]
   notes?: string
+  /** FIIE due date (45 school days from referral, or customDueDate for Re-eval). */
   deadlineDate: string
+  /** ARD due = deadlineDate + 30 calendar days. */
+  ardDueDate?: string
   archived: boolean
 }
 
+export interface DistrictCalendar {
+  nonSchoolDays: string[] // ISO date strings
+}

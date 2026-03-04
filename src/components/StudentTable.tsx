@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import type { StudentRecord } from '../types'
 import { StagePipeline } from './StagePipeline'
 import { calculateDaysRemaining, formatDisplayDate } from '../dateUtils'
+import { getDisabilityLabel } from '../useStudents'
 import clsx from 'clsx'
 
 interface Props {
@@ -72,7 +73,7 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
                         key={d}
                         className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-800"
                       >
-                        {d}
+                        {getDisabilityLabel(d)}
                       </span>
                     ))}
                   </div>
@@ -82,8 +83,13 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
                     <StagePipeline stage={s.stage} />
                   </div>
                   <div className="text-xs text-slate-600">
-                    Due {formatDisplayDate(s.deadlineDate)}
+                    FIIE due {formatDisplayDate(s.deadlineDate)}
                   </div>
+                  {s.ardDueDate && (
+                    <div className="text-xs text-slate-500">
+                      ARD due {formatDisplayDate(s.ardDueDate)}
+                    </div>
+                  )}
                 </td>
                 <td className="px-3 py-3">
                   <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-800">

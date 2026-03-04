@@ -13,7 +13,7 @@ function Header({ onBackup }: { onBackup: () => void }) {
         <div className="min-w-0">
           <div className="flex items-baseline gap-3">
             <div className="text-lg font-semibold tracking-tight text-slate-900">
-              60Days
+              45Days
             </div>
             <div className="hidden text-sm text-slate-600 sm:block">
               Texas Educational Diagnostician caseload manager (local-only)
@@ -66,7 +66,7 @@ function App() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `60days-backup-${date}.json`
+    a.download = `45days-backup-${date}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -172,11 +172,11 @@ function App() {
               {showEmptyState ? (
                 <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
                   <div className="text-base font-semibold text-slate-900">
-                    Start your first 60-day caseload.
+                    Start your first 45 school-day caseload.
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
-                    Add students with initials only. You&apos;ll see deadlines, urgency
-                    colors, and pipeline stages here.
+                    Add students with initials or campus ID. You&apos;ll see FIIE/ARD
+                    due dates, urgency colors, and pipeline stages here.
                   </div>
                   <div className="mt-4">
                     <button

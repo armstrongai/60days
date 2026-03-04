@@ -12,10 +12,10 @@ export default defineConfig({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       manifest: {
-        name: '60Days',
-        short_name: '60Days',
+        name: '45Days',
+        short_name: '45Days',
         description:
-          '60Days — a local-only caseload manager for Texas Educational Diagnosticians.',
+          '45Days — a local-only caseload manager for Texas Educational Diagnosticians.',
         theme_color: '#0f172a',
         background_color: '#f8fafc',
         display: 'standalone',

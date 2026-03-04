@@ -1,8 +1,13 @@
 import type { FC, FormEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import type { DisabilityArea, Grade, Stage, StudentRecord } from '../types'
-import { allDisabilityAreas, addStudent, updateStudent } from '../useStudents'
-import { calculateDeadlineDate, calculateDaysRemaining } from '../dateUtils'
+import { allDisabilityAreas, addStudent, updateStudent, normalizeDisabilityArea } from '../useStudents'
+import {
+  calculateFiiieDueDate,
+  calculateArdDueDate,
+  calculateDaysRemaining,
+} from '../dateUtils'
+import { getDistrictCalendar } from '../db'
 
 interface Props {
   open: boolean
@@ -36,7 +41,11 @@ const stages: Stage[] = [
   'Complete',
 ]
 
-export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }) => {
+export const AddEditStudentModal: FC<Props> = ({
+  open,
+  onClose,
+  initialStudent,
+}) => {
   const [initials, setInitials] = useState('')
   const [studentId, setStudentId] = useState('')
   const [grade, setGrade] = useState<Grade>('K')
@@ -44,11 +53,20 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
     'Initial',
   )
   const [referralDate, setReferralDate] = useState('')
+  const [customDueDate, setCustomDueDate] = useState('')
+  const [absenceDays, setAbsenceDays] = useState<number>(0)
   const [consentDate, setConsentDate] = useState('')
   const [evaluationDate, setEvaluationDate] = useState('')
   const [stage, setStage] = useState<Stage>('Referral')
   const [disabilityAreas, setDisabilityAreas] = useState<DisabilityArea[]>([])
   const [notes, setNotes] = useState('')
+  const [nonSchoolDays, setNonSchoolDays] = useState<string[]>([])
+
+  useEffect(() => {
+    if (open) {
+      getDistrictCalendar().then((cal) => setNonSchoolDays(cal.nonSchoolDays))
+    }
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -58,10 +76,14 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
         setGrade(initialStudent.grade)
         setEvaluationType(initialStudent.evaluationType)
         setReferralDate(initialStudent.referralDate ?? '')
+        setCustomDueDate(initialStudent.customDueDate ?? '')
+        setAbsenceDays(initialStudent.absenceDays ?? 0)
         setConsentDate(initialStudent.consentDate ?? '')
         setEvaluationDate(initialStudent.evaluationDate ?? '')
         setStage(initialStudent.stage)
-        setDisabilityAreas(initialStudent.disabilityAreas ?? [])
+        setDisabilityAreas(
+          (initialStudent.disabilityAreas ?? []).map(normalizeDisabilityArea),
+        )
         setNotes(initialStudent.notes ?? '')
       } else {
         setInitials('')
@@ -69,6 +91,8 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
         setGrade('K')
         setEvaluationType('Initial')
         setReferralDate('')
+        setCustomDueDate('')
+        setAbsenceDays(0)
         setConsentDate('')
         setEvaluationDate('')
         setStage('Referral')
@@ -78,25 +102,45 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
     }
   }, [open, initialStudent])
 
-  const deadlineDate = useMemo(
-    () => calculateDeadlineDate(referralDate),
-    [referralDate],
-  )
-  const daysRemaining = useMemo(
-    () => calculateDaysRemaining(deadlineDate),
-    [deadlineDate],
-  )
+  const { fiiieDue, ardDue, daysRemaining } = useMemo(() => {
+    if (evaluationType === 'Re-eval' && customDueDate) {
+      const ard = calculateArdDueDate(customDueDate)
+      return {
+        fiiieDue: customDueDate,
+        ardDue: ard,
+        daysRemaining: calculateDaysRemaining(customDueDate),
+      }
+    }
+    if (referralDate) {
+      const fiiie = calculateFiiieDueDate(
+        referralDate,
+        nonSchoolDays,
+        absenceDays || 0,
+      )
+      const ard = calculateArdDueDate(fiiie)
+      return {
+        fiiieDue: fiiie,
+        ardDue: ard,
+        daysRemaining: calculateDaysRemaining(fiiie),
+      }
+    }
+    return { fiiieDue: '', ardDue: '', daysRemaining: null as number | null }
+  }, [evaluationType, referralDate, customDueDate, nonSchoolDays, absenceDays])
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!referralDate || !initials.trim()) return
+    if (!initials.trim()) return
+    if (evaluationType === 'Initial' && !referralDate) return
+    if (evaluationType === 'Re-eval' && !referralDate && !customDueDate) return
 
     const payload = {
       initials: initials.trim(),
       studentId: studentId.trim() || undefined,
       grade,
       evaluationType,
-      referralDate,
+      referralDate: referralDate || undefined,
+      customDueDate: customDueDate || undefined,
+      absenceDays: absenceDays || undefined,
       consentDate: consentDate || undefined,
       evaluationDate: evaluationDate || undefined,
       stage,
@@ -115,6 +159,9 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
 
   if (!open) return null
 
+  const showCustomDue = evaluationType === 'Re-eval'
+  const referralRequired = evaluationType === 'Initial'
+
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-900/30 px-4 py-8">
       <div className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-xl">
@@ -125,7 +172,8 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
                 {initialStudent ? 'Edit student' : 'Add student'}
               </h2>
               <p className="mt-0.5 text-xs text-slate-600">
-                Student privacy first: use initials only, no full names.
+                Use initials or a campus ID only. Do not enter full names
+                (FERPA/privacy).
               </p>
             </div>
             <button
@@ -141,9 +189,9 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="flex items-center justify-between text-xs font-medium text-slate-700">
-                  <span>Student initials</span>
+                  <span>Student initials or ID</span>
                   <span className="text-[11px] font-normal text-slate-500">
-                    e.g. &quot;M.T.&quot;
+                    e.g. M.T. or campus ID
                   </span>
                 </label>
                 <input
@@ -218,16 +266,52 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="text-xs font-medium text-slate-700">
-                  Referral date
+                  Referral date {referralRequired ? '(required for Initial)' : '(optional for Re-eval)'}
                 </label>
                 <input
                   type="date"
                   value={referralDate}
                   onChange={(e) => setReferralDate(e.target.value)}
                   className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
-                  required
+                  required={referralRequired}
                 />
               </div>
+              {showCustomDue && (
+                <div>
+                  <label className="text-xs font-medium text-slate-700">
+                    Re-eval due date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={customDueDate}
+                    onChange={(e) => setCustomDueDate(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                  />
+                  <p className="mt-0.5 text-[11px] text-slate-500">
+                    When timeline varies; otherwise use referral date above.
+                  </p>
+                </div>
+              )}
+              <div>
+                <label className="text-xs font-medium text-slate-700">
+                  Absence days to add
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={absenceDays || ''}
+                  onChange={(e) =>
+                    setAbsenceDays(Math.max(0, parseInt(e.target.value, 10) || 0))
+                  }
+                  className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                />
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Extends 45 school days.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="text-xs font-medium text-slate-700">
                   Consent date (optional)
@@ -254,15 +338,26 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
 
             <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
               <div className="font-medium">
-                60-day deadline:{' '}
-                {deadlineDate ? (
+                45 school days (FIIE due):{' '}
+                {fiiieDue ? (
                   <span className="font-semibold">
-                    {deadlineDate} {daysRemaining != null && `· ${daysRemaining} days remaining`}
+                    {fiiieDue}
+                    {daysRemaining != null && ` · ${daysRemaining} days remaining`}
                   </span>
                 ) : (
                   <span className="font-normal text-slate-500">
-                    Choose a referral date to see the deadline.
+                    {evaluationType === 'Re-eval'
+                      ? 'Enter referral date or Re-eval due date.'
+                      : 'Enter referral date (and upload district calendar for holidays).'}
                   </span>
+                )}
+              </div>
+              <div className="mt-1 font-medium">
+                ARD due (30 calendar days after FIIE):{' '}
+                {ardDue ? (
+                  <span className="font-semibold">{ardDue}</span>
+                ) : (
+                  <span className="font-normal text-slate-500">—</span>
                 )}
               </div>
             </div>
@@ -334,4 +429,3 @@ export const AddEditStudentModal: FC<Props> = ({ open, onClose, initialStudent }
     </div>
   )
 }
-
