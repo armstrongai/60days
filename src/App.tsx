@@ -6,29 +6,50 @@ import { StudentTable } from './components/StudentTable'
 import { AddEditStudentModal } from './components/AddEditStudentModal'
 import { DataPanel } from './components/DataPanel'
 
+function JsonExportIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+      />
+    </svg>
+  )
+}
+
 function Header({ onBackup }: { onBackup: () => void }) {
   return (
-    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-navy/10 bg-navy">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-3">
-            <div className="text-lg font-semibold tracking-tight text-slate-900">
-              45Days
-            </div>
-            <div className="hidden text-sm text-slate-600 sm:block">
-              Texas Educational Diagnostician caseload manager (local-only)
-            </div>
-          </div>
+        <div className="flex min-w-0 items-center gap-3">
+          <img
+            src="/tli-logo.png"
+            alt="The Learning Index"
+            className="h-9 w-9 shrink-0 rounded-full object-contain"
+          />
+          <span className="text-lg font-semibold tracking-tight text-white">
+            45Days
+          </span>
+          <span className="hidden text-sm text-white/80 sm:inline">
+            Texas Educational Diagnostician caseload manager (local-only)
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
-            onClick={onBackup}
-          >
-            Back up my data
-          </button>
-        </div>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-md bg-gold px-3 py-2 text-sm font-medium text-navy shadow-sm hover:bg-gold-light focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-navy"
+          onClick={onBackup}
+        >
+          <JsonExportIcon />
+          One-Click Backup
+        </button>
       </div>
     </header>
   )
@@ -80,17 +101,17 @@ function App() {
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-xl font-semibold tracking-tight text-slate-900">
+              <h1 className="text-xl font-semibold tracking-tight text-navy">
                 Caseload dashboard
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-navy/70">
                 See who is most urgent at a glance. All data stays on this device.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                className="rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-light"
                 onClick={openAdd}
               >
                 Add student
@@ -108,13 +129,13 @@ function App() {
           <div className="flex flex-col gap-3 md:flex-row md:items-start">
             <div className="flex-1 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium text-slate-700">
+                <div className="inline-flex rounded-lg border border-navy/15 bg-white p-0.5 text-xs font-medium text-navy">
                   <button
                     type="button"
                     className={`rounded-md px-3 py-1.5 ${
                       filter.tab === 'all'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600'
+                        ? 'bg-gold text-navy shadow-sm'
+                        : 'text-navy/70 hover:text-navy'
                     }`}
                     onClick={() => setFilter({ tab: 'all' })}
                   >
@@ -124,8 +145,8 @@ function App() {
                     type="button"
                     className={`rounded-md px-3 py-1.5 ${
                       filter.tab === 'urgent'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600'
+                        ? 'bg-gold text-navy shadow-sm'
+                        : 'text-navy/70 hover:text-navy'
                     }`}
                     onClick={() => setFilter({ tab: 'urgent' })}
                   >
@@ -135,8 +156,8 @@ function App() {
                     type="button"
                     className={`rounded-md px-3 py-1.5 ${
                       filter.tab === 'by-stage'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600'
+                        ? 'bg-gold text-navy shadow-sm'
+                        : 'text-navy/70 hover:text-navy'
                     }`}
                     onClick={() =>
                       setFilter({
@@ -157,7 +178,7 @@ function App() {
                         stage: e.target.value as Stage,
                       })
                     }
-                    className="rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
+                    className="rounded-md border border-navy/20 bg-white px-2 py-1.5 text-xs text-navy"
                   >
                     <option value="Referral">Referral</option>
                     <option value="Consent">Consent</option>
@@ -170,18 +191,18 @@ function App() {
               </div>
 
               {showEmptyState ? (
-                <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
-                  <div className="text-base font-semibold text-slate-900">
+                <div className="rounded-lg border border-dashed border-navy/20 bg-white px-6 py-10 text-center">
+                  <div className="text-base font-semibold text-navy">
                     Start your first 45 school-day caseload.
                   </div>
-                  <div className="mt-1 text-sm text-slate-600">
+                  <div className="mt-1 text-sm text-navy/70">
                     Add students with initials or campus ID. You&apos;ll see FIIE/ARD
                     due dates, urgency colors, and pipeline stages here.
                   </div>
                   <div className="mt-4">
                     <button
                       type="button"
-                      className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                      className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light"
                       onClick={openAdd}
                     >
                       Add your first student
@@ -203,8 +224,8 @@ function App() {
           </div>
         </div>
       </main>
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-3 text-xs text-slate-600 sm:px-6">
+      <footer className="border-t border-navy/10 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-3 text-xs text-navy/70 sm:px-6">
           Your data is stored locally on this device only. Back up regularly.
         </div>
       </footer>

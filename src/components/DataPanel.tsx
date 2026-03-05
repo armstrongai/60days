@@ -89,8 +89,8 @@ export const DataPanel: FC<Props> = ({ onAfterChange }) => {
   }, [])
 
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-700">
-      <div className="font-semibold text-slate-900">Data &amp; calendar</div>
+    <div className="space-y-2 rounded-lg border border-navy/10 bg-white px-4 py-3 text-xs text-navy/80">
+      <div className="font-semibold text-navy">Data &amp; calendar</div>
       <p>
         Your caseload never leaves this device. Use backups if you switch
         computers or want an extra safety net.
@@ -105,7 +105,7 @@ export const DataPanel: FC<Props> = ({ onAfterChange }) => {
         <button
           type="button"
           onClick={handleUploadCalendar}
-          className="mt-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+          className="mt-1 rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
         >
           Upload district calendar
         </button>
@@ -118,28 +118,28 @@ export const DataPanel: FC<Props> = ({ onAfterChange }) => {
         <button
           type="button"
           onClick={handleBackup}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+          className="rounded-md bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-light"
         >
           Back up my data
         </button>
         <button
           type="button"
           onClick={() => handleRestore('merge')}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
         >
           Restore (merge)
         </button>
         <button
           type="button"
           onClick={() => handleRestore('replace')}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
         >
           Restore (replace all)
         </button>
         <button
           type="button"
           onClick={handleArchiveCompleted}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
         >
           Archive completed cases
         </button>

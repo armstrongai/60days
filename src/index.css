@@ -2,16 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* App defaults: light mode, clean work-tool styling */
+/* TLI: Clean white and light gray background */
 html,
 body {
   height: 100%;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply antialiased;
+  background-color: #F8F9FA;
+  color: #002147;
 }
 
 * {
-  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-tli-bg;
 }

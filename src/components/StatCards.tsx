@@ -15,33 +15,32 @@ export const StatCards: FC<Props> = ({
 }) => {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-        <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <div className="rounded-lg border-2 border-navy/20 bg-white px-4 py-3 shadow-sm">
+        <div className="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Total caseload
         </div>
-        <div className="mt-2 text-2xl font-semibold text-slate-900">{total}</div>
+        <div className="mt-2 text-2xl font-bold text-navy">{total}</div>
       </div>
-      <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3">
-        <div className="text-xs font-medium uppercase tracking-wide text-red-700">
-          Critical (≤ 7 days)
+      <div className="rounded-lg border-2 border-red-500 bg-red-500/10 px-4 py-3 shadow-sm">
+        <div className="text-xs font-semibold uppercase tracking-wide text-red-700">
+          Critical: 0–7 days
         </div>
-        <div className="mt-2 text-2xl font-semibold text-red-800">{critical}</div>
+        <div className="mt-2 text-2xl font-bold text-red-700">{critical}</div>
       </div>
-      <div className="rounded-lg border border-orange-100 bg-orange-50 px-4 py-3">
-        <div className="text-xs font-medium uppercase tracking-wide text-orange-800">
-          At risk (8–14 days)
+      <div className="rounded-lg border-2 border-orange-500 bg-orange-500/10 px-4 py-3 shadow-sm">
+        <div className="text-xs font-semibold uppercase tracking-wide text-orange-700">
+          At risk: 8–14 days
         </div>
-        <div className="mt-2 text-2xl font-semibold text-orange-900">{atRisk}</div>
+        <div className="mt-2 text-2xl font-bold text-orange-700">{atRisk}</div>
       </div>
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-        <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <div className="rounded-lg border-2 border-navy/20 bg-white px-4 py-3 shadow-sm">
+        <div className="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Average days remaining
         </div>
-        <div className="mt-2 text-2xl font-semibold text-slate-900">
+        <div className="mt-2 text-2xl font-bold text-navy">
           {avgDaysRemaining ?? '—'}
         </div>
       </div>
     </div>
   )
 }
-
