@@ -23,19 +23,19 @@ export const StatCards: FC<Props> = ({
       </div>
       <div className="rounded-lg border-2 border-red-500 bg-red-500/10 px-4 py-3 shadow-sm">
         <div className="text-xs font-semibold uppercase tracking-wide text-red-700">
-          Critical: 0–7 days
+          Urgent (&lt;15 instr. days left)
         </div>
         <div className="mt-2 text-2xl font-bold text-red-700">{critical}</div>
       </div>
       <div className="rounded-lg border-2 border-orange-500 bg-orange-500/10 px-4 py-3 shadow-sm">
         <div className="text-xs font-semibold uppercase tracking-wide text-orange-700">
-          At risk: 8–14 days
+          Warning (15–29 instr. days left)
         </div>
         <div className="mt-2 text-2xl font-bold text-orange-700">{atRisk}</div>
       </div>
       <div className="rounded-lg border-2 border-navy/20 bg-white px-4 py-3 shadow-sm">
         <div className="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Average days remaining
+          Avg. instructional days left
         </div>
         <div className="mt-2 text-2xl font-bold text-navy">
           {avgDaysRemaining ?? '—'}

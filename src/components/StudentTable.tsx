@@ -1,33 +1,27 @@
 import type { FC } from 'react'
 import type { StudentRecord } from '../types'
 import { StagePipeline } from './StagePipeline'
-import { calculateDaysRemaining, formatDisplayDate } from '../dateUtils'
+import { formatDisplayDate } from '../dateUtils'
 import { getDisabilityLabel } from '../useStudents'
+import type { EnrichedStudent } from '../useStudents'
 import clsx from 'clsx'
 
 interface Props {
-  students: (StudentRecord & { daysRemaining?: number | null })[]
+  students: EnrichedStudent[]
   onEdit: (student: StudentRecord) => void
   onArchive: (student: StudentRecord) => void
 }
 
-function getInitials(s: StudentRecord): string {
-  if (s.fullName?.trim()) {
-    const parts = s.fullName.trim().split(/\s+/)
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    }
-    return s.fullName.slice(0, 2).toUpperCase()
-  }
-  return (s.initials || '?').slice(0, 2).toUpperCase()
+function avatarInitials(s: StudentRecord): string {
+  return (s.initials || '?').slice(0, 3).toUpperCase()
 }
 
-function daysColor(days: number | null | undefined) {
-  if (days == null) return 'bg-gray-200 text-navy/80'
-  if (days <= 7) return 'bg-red-500/15 text-red-800 border-red-500/50'
-  if (days <= 14) return 'bg-orange-500/15 text-orange-800 border-orange-500/50'
-  if (days <= 30) return 'bg-amber-500/15 text-amber-800 border-amber-500/50'
-  return 'bg-emerald-500/15 text-emerald-800 border-emerald-500/50'
+function instructionalPillClass(tier: EnrichedStudent['instructionalTier']) {
+  if (tier === 'no_calendar' || tier === 'no_consent')
+    return 'border-amber-500 bg-amber-50 text-amber-900'
+  if (tier === 'urgent') return 'border-red-500 bg-red-50 text-red-800'
+  if (tier === 'warning') return 'border-amber-500 bg-amber-100 text-amber-900'
+  return 'border-emerald-500 bg-emerald-50 text-emerald-900'
 }
 
 export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
@@ -55,26 +49,24 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
             <th className="px-3 py-3">Disability areas</th>
             <th className="px-3 py-3">Pipeline</th>
             <th className="px-3 py-3">Stage</th>
-            <th className="px-3 py-3">Deadline countdown</th>
+            <th className="px-3 py-3">45-day countdown</th>
             <th className="px-3 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-navy/5 text-sm">
           {students.map((s) => {
-            const days =
-              (s as any).daysRemaining ?? calculateDaysRemaining(s.deadlineDate)
-            const initials = getInitials(s)
+            const ini = avatarInitials(s)
+            const tier = s.instructionalTier
+            const rem = s.instructionalRemaining
             return (
               <tr key={s.id} className="hover:bg-navy/[0.02]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-navy/20 bg-navy/10 text-sm font-bold text-navy">
-                      {initials}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-navy/20 bg-navy/10 text-xs font-bold text-navy">
+                      {ini}
                     </div>
                     <div>
-                      <div className="font-semibold text-navy">
-                        {s.fullName?.trim() || s.initials}
-                      </div>
+                      <div className="font-semibold text-navy">{s.initials}</div>
                       <div className="text-xs text-navy/70">
                         {s.studentId ? `ID ${s.studentId} · ` : ''}
                         {s.grade}
@@ -117,11 +109,15 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
                 <td className="px-3 py-3">
                   <span
                     className={clsx(
-                      'inline-flex min-w-[5rem] items-center justify-center rounded-lg border-2 px-2.5 py-1 text-xs font-bold',
-                      daysColor(days),
+                      'inline-flex min-w-[6.5rem] items-center justify-center rounded-lg border-2 px-2.5 py-1 text-xs font-bold',
+                      instructionalPillClass(tier),
                     )}
                   >
-                    {days != null ? `${days} Days Left` : '—'}
+                    {tier === 'no_calendar' && 'Calendar not set'}
+                    {tier === 'no_consent' && 'Add consent date'}
+                    {(tier === 'ok' || tier === 'warning' || tier === 'urgent') &&
+                      rem != null &&
+                      `${rem} Days Left`}
                   </span>
                 </td>
                 <td className="px-3 py-3 text-right">

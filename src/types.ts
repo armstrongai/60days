@@ -36,32 +36,79 @@ export type DisabilityArea =
   | 'Deaf/Hard of Hearing'
   | 'Other'
 
+export interface NonInstructionalDay {
+  date: string
+  label: string
+}
+
+/** One district calendar (multiple supported). */
+export interface DistrictCalendarRecord {
+  id?: number
+  name: string
+  startDate: string
+  endDate: string
+  nonInstructionalDays: NonInstructionalDay[]
+}
+
+export interface TemplateTaskRow {
+  text: string
+}
+
+export interface TaskTemplateRecord {
+  id: string
+  tasks: TemplateTaskRow[]
+}
+
+export interface StudentTask {
+  id: string
+  text: string
+  dueDate?: string
+  completed: boolean
+  createdAt: number
+}
+
+export type PlannerGlobalCategory = 'Eval' | 'Admin' | 'Meeting' | 'Campus Visit'
+
+export interface PlannerGlobalTask {
+  id?: number
+  text: string
+  dueDate: string
+  category: PlannerGlobalCategory
+  completed: boolean
+  createdAt: number
+}
+
+/** Linked when an ARD/IEP-style student task gets a due date. */
+export interface PlannerMeetingLink {
+  id?: number
+  studentId: number
+  initials: string
+  taskText: string
+  dueDate: string
+  createdAt: number
+}
+
 export interface StudentRecord {
   id?: number
   initials: string
+  /** Legacy field — not shown in UI (FERPA / initials-only policy). */
   fullName?: string
   schoolName?: string
   studentId?: string
   grade: Grade
   evaluationType: EvaluationType
-  /** Required for Initial; optional for Re-eval (deadline can vary). */
   referralDate?: string
-  /** For Re-eval: manual due date when timeline doesn't follow 45 school days. */
   customDueDate?: string | null
-  /** Extra school days to add (e.g. absences). FIIE due = 45 + absenceDays school days from referral. */
   absenceDays?: number
   consentDate?: string | null
   evaluationDate?: string | null
   stage: Stage
   disabilityAreas: DisabilityArea[]
   notes?: string
-  /** FIIE due date (45 school days from referral, or customDueDate for Re-eval). */
   deadlineDate: string
-  /** ARD due = deadlineDate + 30 calendar days. */
   ardDueDate?: string
   archived: boolean
-}
-
-export interface DistrictCalendar {
-  nonSchoolDays: string[] // ISO date strings
+  districtCalendarId?: number
+  stickyNote?: string
+  tasks?: StudentTask[]
 }
