@@ -46,8 +46,34 @@ if (fs.existsSync(strayRootIndex)) {
   console.log('[merge-netlify] Removed dist/index.html (homepage is /landing.html)')
 }
 
-fs.copyFileSync(landingSrc, path.join(dist, 'landing.html'))
-console.log('[merge-netlify] Copied publish/landing.html → dist/landing.html')
+const landingOut = path.join(dist, 'landing.html')
+fs.copyFileSync(landingSrc, landingOut)
+if (!fs.existsSync(landingOut)) {
+  console.error('[merge-netlify] dist/landing.html missing immediately after copy.')
+  process.exit(1)
+}
+const landingBytes = fs.statSync(landingOut).size
+if (landingBytes < 500) {
+  console.error('[merge-netlify] dist/landing.html is suspiciously small (' + landingBytes + ' bytes).')
+  process.exit(1)
+}
+console.log('[merge-netlify] Copied publish/landing.html → dist/landing.html (' + landingBytes + ' bytes)')
+
+// Same routing as repo-root netlify.toml, but shipped inside the publish dir so deploys always carry rules.
+// Netlify reads netlify.toml from the repo (or base dir), not from dist — this file is a fallback if UI/summary looks wrong.
+const redirectsOut = path.join(dist, '_redirects')
+fs.writeFileSync(
+  redirectsOut,
+  [
+    '/api/*\t/.netlify/functions/:splat\t200',
+    '/app\t/app/app.html\t200',
+    '/app/*\t/app/app.html\t200',
+    '/\t/landing.html\t200!',
+    '',
+  ].join('\n'),
+  'utf8',
+)
+console.log('[merge-netlify] Wrote dist/_redirects (/, /app, /api)')
 
 const logoSrc = fs.existsSync(logoRoot) ? logoRoot : logoPublic
 if (fs.existsSync(logoSrc)) {
