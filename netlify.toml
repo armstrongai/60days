@@ -3,8 +3,8 @@
   publish = "dist"
   functions = "netlify/functions"
 
-# Homepage + SPA (must be first). Netlify serves /index.html before non-forced redirects —
-# use force on / so landing wins even if a stale dist/index.html exists.
+# Routing (first). Publish directory is `dist` only — see scripts/merge-netlify.cjs.
+# No dist/index.html: SPA entry is dist/app/app.html only.
 [[redirects]]
   from = "/"
   to = "/landing.html"
@@ -13,12 +13,12 @@
 
 [[redirects]]
   from = "/app"
-  to = "/app/index.html"
+  to = "/app/app.html"
   status = 200
 
 [[redirects]]
   from = "/app/*"
-  to = "/app/index.html"
+  to = "/app/app.html"
   status = 200
 
 # Stripe: https://45days.thelearningindex.com/api/stripe-webhook

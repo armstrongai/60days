@@ -1,36 +1,53 @@
 /**
- * After `vite build`, write marketing page to dist/landing.html and keep SPA at dist/app/.
- * Copies TLI_Logo.png from project root or public/ to dist root for /TLI_Logo.png.
+ * After `vite build`, assemble Netlify publish dir `dist/` (see netlify.toml publish = "dist"):
+ * - SPA shell: dist/app/index.html → dist/app/app.html (no index.html under /app/)
+ * - Patch workbox precache in dist/app/sw.js to reference app.html
+ * - Marketing: copy publish/landing.html → dist/landing.html
+ * - Logo: TLI_Logo.png at dist root
+ * - Remove stray dist/index.html so "/" is never a static index file at publish root
  */
 const fs = require('fs')
 const path = require('path')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
-const landingSrc = path.join(root, 'landing.html')
+const landingSrc = path.join(root, 'publish', 'landing.html')
 const logoRoot = path.join(root, 'TLI_Logo.png')
 const logoPublic = path.join(root, 'public', 'TLI_Logo.png')
 
-if (!fs.existsSync(path.join(dist, 'app', 'index.html'))) {
+const appIndex = path.join(dist, 'app', 'index.html')
+const appHtml = path.join(dist, 'app', 'app.html')
+
+if (!fs.existsSync(appIndex)) {
   console.error('[merge-netlify] dist/app/index.html missing — run vite build first.')
   process.exit(1)
 }
 
+fs.renameSync(appIndex, appHtml)
+console.log('[merge-netlify] Renamed dist/app/index.html → dist/app/app.html')
+
+const swPath = path.join(dist, 'app', 'sw.js')
+const swSrc = fs.readFileSync(swPath, 'utf8')
+if (!swSrc.includes('"url":"index.html"')) {
+  console.warn('[merge-netlify] sw.js: precache entry "url":"index.html" not found — check Workbox output')
+} else {
+  fs.writeFileSync(swPath, swSrc.replace('"url":"index.html"', '"url":"app.html"'))
+  console.log('[merge-netlify] Patched sw.js precache URL index.html → app.html')
+}
+
 if (!fs.existsSync(landingSrc)) {
-  console.error('[merge-netlify] landing.html missing at project root.')
+  console.error('[merge-netlify] publish/landing.html missing.')
   process.exit(1)
 }
 
-// Netlify serves publish-dir /index.html for "/" before rewrites unless redirect has force=true.
-// Remove any root index.html so "/" cannot accidentally serve the SPA or a duplicate page.
 const strayRootIndex = path.join(dist, 'index.html')
 if (fs.existsSync(strayRootIndex)) {
   fs.unlinkSync(strayRootIndex)
-  console.log('[merge-netlify] Removed dist/index.html (homepage is /landing.html via netlify.toml)')
+  console.log('[merge-netlify] Removed dist/index.html (homepage is /landing.html)')
 }
 
 fs.copyFileSync(landingSrc, path.join(dist, 'landing.html'))
-console.log('[merge-netlify] Wrote dist/landing.html')
+console.log('[merge-netlify] Copied publish/landing.html → dist/landing.html')
 
 const logoSrc = fs.existsSync(logoRoot) ? logoRoot : logoPublic
 if (fs.existsSync(logoSrc)) {

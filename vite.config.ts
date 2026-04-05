@@ -19,7 +19,7 @@ function inject45DaysConfigFromEnv(mode: string) {
 }
 
 // https://vite.dev/config/
-// Production site: marketing at / (dist/index.html), SPA at /app/ (merge-netlify.cjs + outDir).
+// Netlify publish dir is dist/. Landing: dist/landing.html (from publish/landing.html). SPA shell: dist/app/app.html (renamed in merge-netlify.cjs).
 export default defineConfig(({ mode }) => ({
   base: mode === 'production' ? '/app/' : '/',
   build: {
