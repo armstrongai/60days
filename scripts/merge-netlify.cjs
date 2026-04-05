@@ -21,6 +21,14 @@ if (!fs.existsSync(landingSrc)) {
   process.exit(1)
 }
 
+// Netlify serves publish-dir /index.html for "/" before rewrites unless redirect has force=true.
+// Remove any root index.html so "/" cannot accidentally serve the SPA or a duplicate page.
+const strayRootIndex = path.join(dist, 'index.html')
+if (fs.existsSync(strayRootIndex)) {
+  fs.unlinkSync(strayRootIndex)
+  console.log('[merge-netlify] Removed dist/index.html (homepage is /landing.html via netlify.toml)')
+}
+
 fs.copyFileSync(landingSrc, path.join(dist, 'landing.html'))
 console.log('[merge-netlify] Wrote dist/landing.html')
 

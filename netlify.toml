@@ -3,18 +3,13 @@
   publish = "dist"
   functions = "netlify/functions"
 
-# Stripe: https://45days.thelearningindex.com/api/stripe-webhook
-# Portal: POST https://45days.thelearningindex.com/api/create-portal-session
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# Marketing landing at / (SPA lives under /app/)
+# Homepage + SPA (must be first). Netlify serves /index.html before non-forced redirects —
+# use force on / so landing wins even if a stale dist/index.html exists.
 [[redirects]]
   from = "/"
   to = "/landing.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/app"
@@ -24,4 +19,11 @@
 [[redirects]]
   from = "/app/*"
   to = "/app/index.html"
+  status = 200
+
+# Stripe: https://45days.thelearningindex.com/api/stripe-webhook
+# Portal: POST https://45days.thelearningindex.com/api/create-portal-session
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
