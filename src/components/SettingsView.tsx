@@ -1,20 +1,19 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
-import { useLiveQuery } from 'dexie-react-hooks'
-import { db, saveDefaultTaskTemplate, getDefaultTaskTemplate } from '../db'
-import type { DistrictCalendarRecord, NonInstructionalDay } from '../types'
+import { saveDefaultTaskTemplate, getDefaultTaskTemplate } from '../db'
+import { DistrictCalendarsSection } from './DistrictCalendarsSection'
+import {
+  verifyLicenseAfterActivationCodeAttempt,
+  openStripeBillingPortal,
+} from '../license'
+import { useLicense } from '../LicenseContext'
 
 export const SettingsView: FC = () => {
-  const calendars = useLiveQuery(() => db.districtCalendars.orderBy('id').toArray(), [])
+  const { canEditCaseload, stripeTrialPaymentLink } = useLicense()
   const [tplRows, setTplRows] = useState<{ text: string }[]>([])
-
-  const [newCal, setNewCal] = useState({
-    name: '',
-    startDate: '',
-    endDate: '',
-  })
-  const [dayForm, setDayForm] = useState<Record<number, { date: string; label: string }>>({})
-  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [showActivation, setShowActivation] = useState(false)
+  const [activationInput, setActivationInput] = useState('')
+  const [activationError, setActivationError] = useState('')
 
   useEffect(() => {
     getDefaultTaskTemplate().then((t) => {
@@ -22,43 +21,11 @@ export const SettingsView: FC = () => {
     })
   }, [])
 
-  const addCalendar = async () => {
-    if (!newCal.name.trim() || !newCal.startDate || !newCal.endDate) return
-    await db.districtCalendars.add({
-      name: newCal.name.trim(),
-      startDate: newCal.startDate,
-      endDate: newCal.endDate,
-      nonInstructionalDays: [],
-    })
-    setNewCal({ name: '', startDate: '', endDate: '' })
-  }
-
-  const addNonInstructional = async (cal: DistrictCalendarRecord) => {
-    const id = cal.id!
-    const f = dayForm[id] ?? { date: '', label: '' }
-    if (!f.date) return
-    const next: NonInstructionalDay[] = [
-      ...(cal.nonInstructionalDays ?? []),
-      { date: f.date.slice(0, 10), label: f.label.trim() || 'Non-instructional' },
-    ]
-    await db.districtCalendars.update(id, { nonInstructionalDays: next })
-    setDayForm((p) => ({ ...p, [id]: { date: '', label: '' } }))
-  }
-
-  const removeDay = async (cal: DistrictCalendarRecord, idx: number) => {
-    const next = [...(cal.nonInstructionalDays ?? [])]
-    next.splice(idx, 1)
-    await db.districtCalendars.update(cal.id!, { nonInstructionalDays: next })
-  }
-
-  const deleteCalendar = async (id: number) => {
-    if (!confirm('Delete this district calendar? Students using it will need a new assignment.'))
-      return
-    await db.districtCalendars.delete(id)
-  }
-
   const saveTemplate = async () => {
-    await saveDefaultTaskTemplate(tplRows.filter((r) => r.text.trim()).map((r) => ({ text: r.text.trim() })))
+    if (!canEditCaseload) return
+    await saveDefaultTaskTemplate(
+      tplRows.filter((r) => r.text.trim()).map((r) => ({ text: r.text.trim() })),
+    )
     alert('Default task template saved. New students only.')
   }
 
@@ -70,132 +37,87 @@ export const SettingsView: FC = () => {
     setTplRows(next)
   }
 
+  const submitActivation = async () => {
+    setActivationError('')
+    const result = await verifyLicenseAfterActivationCodeAttempt(activationInput.trim())
+    if (result.ok) {
+      window.location.reload()
+      return
+    }
+    if (result.reason === 'format') {
+      setActivationError(
+        "That code doesn't look right — check your confirmation email and try again.",
+      )
+      return
+    }
+    setActivationError(
+      'We could not verify your license. If you just purchased, wait a few minutes and try again. Contact support at support@thelearningindex.com if this keeps happening.',
+    )
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-6">
+      <DistrictCalendarsSection canEdit={canEditCaseload} />
+
       <section className="rounded-lg border border-navy/10 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-navy">District calendars</h2>
+        <h2 className="text-lg font-semibold text-navy">Account</h2>
         <p className="mt-1 text-sm text-navy/70">
-          Configure one or more calendars. Add non-instructional days one at a time (holidays, breaks).
+          If you purchased a license, enter the activation code from your confirmation
+          email here.
         </p>
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          <input
-            className="rounded border border-navy/20 px-2 py-1.5 text-sm"
-            placeholder="Calendar name"
-            value={newCal.name}
-            onChange={(e) => setNewCal((p) => ({ ...p, name: e.target.value }))}
-          />
-          <input
-            type="date"
-            className="rounded border border-navy/20 px-2 py-1.5 text-sm"
-            value={newCal.startDate}
-            onChange={(e) => setNewCal((p) => ({ ...p, startDate: e.target.value }))}
-          />
-          <input
-            type="date"
-            className="rounded border border-navy/20 px-2 py-1.5 text-sm"
-            value={newCal.endDate}
-            onChange={(e) => setNewCal((p) => ({ ...p, endDate: e.target.value }))}
-          />
-        </div>
-        <button
-          type="button"
-          className="mt-2 rounded-md bg-navy px-3 py-1.5 text-sm font-medium text-white"
-          onClick={addCalendar}
-        >
-          Add calendar
-        </button>
-
-        <ul className="mt-6 space-y-3">
-          {(calendars ?? []).map((cal) => (
-            <li
-              key={cal.id}
-              className="rounded-md border border-navy/15 bg-tli-bg p-3 text-sm"
+        <p className="mt-3 text-sm text-navy/80">
+          New here?{' '}
+          <a
+            href={stripeTrialPaymentLink}
+            className="font-medium text-navy underline decoration-navy/30 underline-offset-2"
+          >
+            Start a free trial or subscribe
+          </a>{' '}
+          — you&apos;ll use the same email you sign up with in this app.
+        </p>
+        {!showActivation ? (
+          <button
+            type="button"
+            className="mt-3 text-sm font-medium text-navy underline"
+            onClick={() => setShowActivation(true)}
+          >
+            Enter activation code
+          </button>
+        ) : (
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            <div>
+              <label className="block text-xs font-medium text-navy">Activation code</label>
+              <input
+                className="mt-1 rounded border border-navy/20 px-2 py-1.5 text-sm"
+                placeholder="45D-XXXXXXXX"
+                value={activationInput}
+                onChange={(e) => setActivationInput(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="rounded-md bg-navy px-3 py-1.5 text-sm font-medium text-white"
+              onClick={submitActivation}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  className="text-left font-semibold text-navy"
-                  onClick={() =>
-                    setExpandedId(expandedId === cal.id ? null : (cal.id as number))
-                  }
-                >
-                  {cal.name}{' '}
-                  <span className="font-normal text-navy/60">
-                    ({cal.startDate} – {cal.endDate})
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="text-xs text-red-600"
-                  onClick={() => deleteCalendar(cal.id!)}
-                >
-                  Delete
-                </button>
-              </div>
-              {expandedId === cal.id && (
-                <div className="mt-3 space-y-2 border-t border-navy/10 pt-3">
-                  <div className="flex flex-wrap gap-2">
-                    <input
-                      type="date"
-                      className="rounded border border-navy/20 px-2 py-1 text-xs"
-                      value={dayForm[cal.id!]?.date ?? ''}
-                      onChange={(e) =>
-                        setDayForm((p) => ({
-                          ...p,
-                          [cal.id!]: {
-                            date: e.target.value,
-                            label: p[cal.id!]?.label ?? '',
-                          },
-                        }))
-                      }
-                    />
-                    <input
-                      className="min-w-[8rem] flex-1 rounded border border-navy/20 px-2 py-1 text-xs"
-                      placeholder="Label (e.g. Labor Day)"
-                      value={dayForm[cal.id!]?.label ?? ''}
-                      onChange={(e) =>
-                        setDayForm((p) => ({
-                          ...p,
-                          [cal.id!]: {
-                            date: p[cal.id!]?.date ?? '',
-                            label: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="rounded bg-navy px-2 py-1 text-xs text-white"
-                      onClick={() => addNonInstructional(cal)}
-                    >
-                      Add day
-                    </button>
-                  </div>
-                  <ul className="max-h-40 space-y-1 overflow-y-auto text-xs">
-                    {(cal.nonInstructionalDays ?? []).map((d, idx) => (
-                      <li
-                        key={`${d.date}-${idx}`}
-                        className="flex justify-between gap-2 rounded bg-white px-2 py-1"
-                      >
-                        <span>
-                          {d.date} — {d.label}
-                        </span>
-                        <button
-                          type="button"
-                          className="text-red-600"
-                          onClick={() => removeDay(cal, idx)}
-                        >
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+              Submit
+            </button>
+            {activationError && (
+              <p className="w-full text-sm text-red-600">{activationError}</p>
+            )}
+          </div>
+        )}
+        <div className="mt-6 border-t border-navy/10 pt-4">
+          <button
+            type="button"
+            className="text-sm font-medium text-navy underline decoration-navy/30 underline-offset-2"
+            onClick={() => void openStripeBillingPortal()}
+          >
+            Manage billing and subscription
+          </button>
+          <p className="mt-1 text-xs text-navy/55">
+            Update your card, view invoices, or cancel — opens a secure Stripe page.
+          </p>
+        </div>
       </section>
 
       <section className="rounded-lg border border-navy/10 bg-white p-4 shadow-sm">
@@ -211,7 +133,7 @@ export const SettingsView: FC = () => {
                   type="button"
                   className="text-[10px] text-navy/60"
                   onClick={() => moveTpl(i, -1)}
-                  disabled={i === 0}
+                  disabled={i === 0 || !canEditCaseload}
                 >
                   ↑
                 </button>
@@ -219,14 +141,15 @@ export const SettingsView: FC = () => {
                   type="button"
                   className="text-[10px] text-navy/60"
                   onClick={() => moveTpl(i, 1)}
-                  disabled={i === tplRows.length - 1}
+                  disabled={i === tplRows.length - 1 || !canEditCaseload}
                 >
                   ↓
                 </button>
               </div>
               <input
-                className="min-w-0 flex-1 rounded border border-navy/20 px-2 py-1 text-sm"
+                className="min-w-0 flex-1 rounded border border-navy/20 px-2 py-1 text-sm disabled:opacity-50"
                 value={row.text}
+                disabled={!canEditCaseload}
                 onChange={(e) =>
                   setTplRows((rows) =>
                     rows.map((r, j) => (j === i ? { text: e.target.value } : r)),
@@ -235,7 +158,8 @@ export const SettingsView: FC = () => {
               />
               <button
                 type="button"
-                className="text-xs text-red-600"
+                className="text-xs text-red-600 disabled:opacity-50"
+                disabled={!canEditCaseload}
                 onClick={() => setTplRows((rows) => rows.filter((_, j) => j !== i))}
               >
                 Remove
@@ -245,7 +169,8 @@ export const SettingsView: FC = () => {
         </ul>
         <button
           type="button"
-          className="mt-2 text-sm text-navy underline"
+          className="mt-2 text-sm text-navy underline disabled:opacity-50"
+          disabled={!canEditCaseload}
           onClick={() => setTplRows((r) => [...r, { text: '' }])}
         >
           + Add task line
@@ -253,7 +178,8 @@ export const SettingsView: FC = () => {
         <div className="mt-4">
           <button
             type="button"
-            className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy"
+            className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy disabled:opacity-50"
+            disabled={!canEditCaseload}
             onClick={saveTemplate}
           >
             Save template

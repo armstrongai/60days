@@ -8,9 +8,14 @@ import { updateStudentTasks } from '../useStudents'
 interface Props {
   studentId: number
   initials: string
+  canEdit?: boolean
 }
 
-export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
+export const StudentTasksPanel: FC<Props> = ({
+  studentId,
+  initials,
+  canEdit = true,
+}) => {
   const student = useLiveQuery(() => db.students.get(studentId), [studentId])
   const tasks = student?.tasks ?? []
   const [newTaskText, setNewTaskText] = useState('')
@@ -20,10 +25,12 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
   const done = tasks.filter((t) => t.completed)
 
   const persist = async (next: StudentTask[]) => {
+    if (!canEdit) return
     await updateStudentTasks(studentId, next, initials)
   }
 
   const toggle = async (id: string) => {
+    if (!canEdit) return
     const next = tasks.map((t) =>
       t.id === id ? { ...t, completed: !t.completed } : t,
     )
@@ -31,6 +38,7 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
   }
 
   const updateDue = async (id: string, dueDate: string) => {
+    if (!canEdit) return
     const next = tasks.map((t) =>
       t.id === id ? { ...t, dueDate: dueDate || undefined } : t,
     )
@@ -38,6 +46,7 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
   }
 
   const addCustom = async () => {
+    if (!canEdit) return
     const text = newTaskText.trim()
     if (!text) return
     const next: StudentTask[] = [
@@ -68,6 +77,7 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
               type="checkbox"
               className="mt-0.5 h-3.5 w-3.5 rounded border-navy/30"
               checked={false}
+              disabled={!canEdit}
               onChange={() => toggle(t.id)}
             />
             <span className="flex-1 text-navy">{t.text}</span>
@@ -75,7 +85,8 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
               type="date"
               value={t.dueDate ?? ''}
               onChange={(e) => updateDue(t.id, e.target.value)}
-              className="rounded border border-navy/20 px-1 py-0.5 text-[11px]"
+              disabled={!canEdit}
+              className="rounded border border-navy/20 px-1 py-0.5 text-[11px] disabled:opacity-50"
             />
           </li>
         ))}
@@ -101,6 +112,7 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
                     type="checkbox"
                     className="mt-0.5 h-3.5 w-3.5"
                     checked
+                    disabled={!canEdit}
                     onChange={() => toggle(t.id)}
                   />
                   <span>{t.text}</span>
@@ -117,12 +129,14 @@ export const StudentTasksPanel: FC<Props> = ({ studentId, initials }) => {
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
           placeholder="Add a task…"
-          className="min-w-0 flex-1 rounded border border-navy/20 px-2 py-1 text-xs"
+          disabled={!canEdit}
+          className="min-w-0 flex-1 rounded border border-navy/20 px-2 py-1 text-xs disabled:opacity-50"
         />
         <button
           type="button"
-          className="rounded bg-navy px-2 py-1 text-xs font-medium text-white"
+          className="rounded bg-navy px-2 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
           onClick={addCustom}
+          disabled={!canEdit}
         >
           Add
         </button>

@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Local Supabase / app config (copy from public/config.example.js)
+public/config.js
+# Generated from repo-root supabase.js before dev/build
+public/supabase.js
+
+# Env files with secrets
+.env
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

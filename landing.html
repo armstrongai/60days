@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>45Days — Instructional Day Eval Tracker for Texas Diagnosticians</title>
+    <meta
+      name="description"
+      content="Track 45-day eval deadlines by instructional days, manage student task lists, and never miss a compliance deadline. Built for Texas educational diagnosticians."
+    />
+    <meta property="og:title" content="45Days — Instructional Day Eval Tracker for Texas Diagnosticians" />
+    <meta
+      property="og:description"
+      content="Track 45-day eval deadlines by instructional days, manage student task lists, and never miss a compliance deadline. Built for Texas educational diagnosticians."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://45days.thelearningindex.com/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="45Days — Instructional Day Eval Tracker for Texas Diagnosticians" />
+    <meta
+      name="twitter:description"
+      content="Track 45-day eval deadlines by instructional days, manage student task lists, and never miss a compliance deadline. Built for Texas educational diagnosticians."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      const STRIPE_TRIAL_LINK = 'https://buy.stripe.com/test_28E9AS47heEu1n5c7D73G00'
+    </script>
+    <style>
+      :root {
+        --green: #1b5e38;
+        --green-dark: #0f3d22;
+        --gold: #c9a84c;
+        --cream: #f9f7f2;
+        --white: #ffffff;
+        --navy: #0f172a;
+        --muted: rgba(255, 255, 255, 0.72);
+        --muted-dark: rgba(27, 94, 56, 0.65);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        color: var(--green-dark);
+        background: var(--cream);
+        padding-top: 4.25rem;
+      }
+      .font-display {
+        font-family: 'Playfair Display', Georgia, serif;
+      }
+      /* Nav — fixed */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: var(--green-dark);
+        border-bottom: 1px solid rgba(201, 168, 76, 0.22);
+        backdrop-filter: blur(10px);
+      }
+      .nav-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0.65rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: inherit;
+      }
+      .nav-logo {
+        height: 48px;
+        width: auto;
+        display: block;
+      }
+      .nav-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--gold);
+        letter-spacing: 0.02em;
+      }
+      .btn-gold {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.65rem 1.25rem;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        background: var(--gold);
+        color: var(--green-dark);
+        transition:
+          box-shadow 0.3s ease,
+          transform 0.2s ease,
+          filter 0.2s ease;
+      }
+      .btn-gold:hover {
+        box-shadow:
+          0 0 0 2px rgba(201, 168, 76, 0.45),
+          0 0 32px rgba(201, 168, 76, 0.4),
+          0 10px 28px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+      }
+      .btn-gold:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+      }
+      .btn-gold-lg {
+        padding: 1rem 2rem;
+        font-size: 1.05rem;
+        border-radius: 12px;
+      }
+      .btn-gold-block {
+        width: 100%;
+      }
+      /* Hero */
+      .hero {
+        background: linear-gradient(165deg, var(--green-dark) 0%, #0a2e18 55%, var(--green-dark) 100%);
+        color: var(--white);
+        padding: 3rem 1.25rem 4.5rem;
+        overflow: hidden;
+        position: relative;
+      }
+      .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 50% at 70% 20%, rgba(201, 168, 76, 0.12), transparent 55%);
+        pointer-events: none;
+      }
+      .hero-grid {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      @media (min-width: 960px) {
+        .hero-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 3rem;
+        }
+      }
+      .hero-headline {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(2rem, 5vw, 3.15rem);
+        font-weight: 700;
+        line-height: 1.15;
+        margin: 0 0 1rem;
+        opacity: 0;
+        animation: heroFade 1s ease 0.12s forwards;
+      }
+      @keyframes heroFade {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .hero-sub {
+        color: var(--muted);
+        font-size: 1.05rem;
+        max-width: 36rem;
+        margin: 0 0 1.25rem;
+      }
+      .hero-proof {
+        color: var(--gold);
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+        padding-left: 0.1rem;
+        line-height: 1.4;
+      }
+      .hero-proof:last-of-type {
+        margin-bottom: 0;
+      }
+      .hero-cta-wrap {
+        margin-top: 1.75rem;
+      }
+      .hero-note {
+        margin-top: 0.75rem;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+      .mockup-wrap {
+        position: relative;
+      }
+      .mockup-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--gold);
+        margin-bottom: 0.65rem;
+        font-weight: 600;
+      }
+      .mockup {
+        background: var(--navy);
+        border-radius: 16px;
+        padding: 1.1rem 1.1rem 1.2rem;
+        box-shadow:
+          0 28px 64px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(201, 168, 76, 0.28);
+      }
+      .mockup-title {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(248, 250, 252, 0.45);
+        margin-bottom: 0.85rem;
+      }
+      .mock-row {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.55rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .mock-row:last-child {
+        border-bottom: none;
+      }
+      .mock-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(201, 168, 76, 0.18);
+        color: var(--gold);
+        font-size: 0.68rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .mock-meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .mock-name {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #f1f5f9;
+      }
+      .mock-sub {
+        font-size: 0.68rem;
+        color: rgba(248, 250, 252, 0.58);
+      }
+      .pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.38rem 0.55rem;
+        border-radius: 999px;
+        border: 2px solid #64748b;
+        background: #475569;
+        color: #e2e8f0;
+        white-space: nowrap;
+        animation-fill-mode: forwards;
+      }
+      .pill--ok {
+        animation: pillToOk 1.15s ease 0.25s forwards;
+      }
+      .pill--warn {
+        animation: pillToWarn 1.15s ease 0.5s forwards;
+      }
+      .pill--urgent {
+        animation: pillToUrgent 1.15s ease 0.75s forwards;
+      }
+      @keyframes pillToOk {
+        from {
+          border-color: #64748b;
+          background: #475569;
+          color: #e2e8f0;
+        }
+        to {
+          border-color: #059669;
+          background: #064e3b;
+          color: #d1fae5;
+        }
+      }
+      @keyframes pillToWarn {
+        from {
+          border-color: #64748b;
+          background: #475569;
+          color: #e2e8f0;
+        }
+        to {
+          border-color: #d97706;
+          background: #78350f;
+          color: #fef3c7;
+        }
+      }
+      @keyframes pillToUrgent {
+        from {
+          border-color: #64748b;
+          background: #475569;
+          color: #e2e8f0;
+        }
+        to {
+          border-color: #dc2626;
+          background: #7f1d1d;
+          color: #fecaca;
+        }
+      }
+      /* Sections */
+      .section {
+        padding: 4rem 1.25rem;
+      }
+      .section-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 0.7s ease,
+          transform 0.7s ease;
+      }
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .strip {
+        background: var(--cream);
+      }
+      .cards-3 {
+        display: grid;
+        gap: 1.5rem;
+      }
+      @media (min-width: 768px) {
+        .cards-3 {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .card-pain {
+        background: var(--white);
+        border-radius: 14px;
+        padding: 1.5rem 1.35rem;
+        box-shadow: 0 4px 24px rgba(15, 61, 34, 0.06);
+        border: 1px solid rgba(27, 94, 56, 0.08);
+      }
+      .card-pain svg {
+        width: 40px;
+        height: 40px;
+        color: var(--gold);
+        margin-bottom: 0.75rem;
+      }
+      .card-pain h3 {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem;
+        color: var(--green-dark);
+      }
+      .card-pain p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--muted-dark);
+      }
+      .features {
+        background: var(--white);
+      }
+      .features h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+        color: var(--green);
+        text-align: center;
+        margin: 0 0 2.5rem;
+      }
+      .grid-2 {
+        display: grid;
+        gap: 2rem;
+      }
+      @media (min-width: 720px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .feature {
+        padding-top: 0.5rem;
+        border-top: 3px solid var(--gold);
+      }
+      .feature h3 {
+        margin: 0.75rem 0 0.5rem;
+        font-size: 1.1rem;
+        color: var(--green-dark);
+      }
+      .feature p {
+        margin: 0;
+        color: var(--muted-dark);
+        font-size: 0.98rem;
+      }
+      .cred {
+        background: var(--green-dark);
+        color: var(--white);
+        text-align: center;
+        padding: 4rem 1.25rem;
+      }
+      .cred h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        font-weight: 600;
+        margin: 0 0 1rem;
+        line-height: 1.3;
+      }
+      .cred p {
+        color: var(--muted);
+        max-width: 36rem;
+        margin: 0 auto 1.5rem;
+        font-size: 1rem;
+      }
+      .cred-logo {
+        height: 64px;
+        width: auto;
+      }
+      .pricing {
+        background: var(--cream);
+        text-align: center;
+      }
+      .pricing h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(1.75rem, 3vw, 2.1rem);
+        color: var(--green-dark);
+        margin: 0 0 2rem;
+      }
+      .price-card {
+        max-width: 420px;
+        margin: 0 auto;
+        background: var(--white);
+        border: 2px solid var(--gold);
+        border-radius: 16px;
+        padding: 2rem 1.75rem;
+        text-align: left;
+        box-shadow: 0 12px 40px rgba(15, 61, 34, 0.08);
+      }
+      .price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.35rem;
+        margin-bottom: 0.35rem;
+      }
+      .price-big {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .price-unit {
+        font-size: 1rem;
+        color: var(--muted-dark);
+      }
+      .price-sub {
+        font-size: 0.9rem;
+        color: var(--muted-dark);
+        margin-bottom: 1.25rem;
+      }
+      .check-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+      }
+      .check-list li {
+        position: relative;
+        padding-left: 1.6rem;
+        margin-bottom: 0.55rem;
+        font-size: 0.95rem;
+        color: var(--green-dark);
+      }
+      .check-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--gold);
+        font-weight: 800;
+      }
+      .cta-strip {
+        background: var(--green-dark);
+        color: var(--white);
+        padding: 3.5rem 1.25rem;
+      }
+      .cta-strip h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        margin: 0 0 0.75rem;
+        text-align: center;
+      }
+      .cta-strip .sub {
+        text-align: center;
+        color: var(--muted);
+        margin: 0 0 1.75rem;
+        font-size: 1rem;
+      }
+      .trial-form {
+        max-width: 520px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      @media (min-width: 540px) {
+        .trial-form {
+          flex-direction: row;
+          align-items: stretch;
+        }
+      }
+      .trial-form input[type='email'] {
+        flex: 1;
+        min-height: 48px;
+        padding: 0 1rem;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.95);
+        font-size: 1rem;
+        font-family: inherit;
+      }
+      .trial-form input:focus {
+        outline: none;
+        border-color: var(--gold);
+      }
+      .footer {
+        background: var(--green-dark);
+        color: var(--muted);
+        padding: 2rem 1.25rem;
+        font-size: 0.85rem;
+      }
+      .footer-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+      @media (min-width: 640px) {
+        .footer-inner {
+          flex-direction: row;
+          align-items: flex-start;
+          justify-content: space-between;
+          flex-wrap: wrap;
+        }
+      }
+      .footer-logo {
+        height: 40px;
+        width: auto;
+        opacity: 0.9;
+      }
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .footer-links a {
+        color: var(--gold);
+        text-decoration: none;
+      }
+      .footer-links a:hover {
+        text-decoration: underline;
+      }
+      .footer-legal {
+        max-width: 36rem;
+        line-height: 1.5;
+      }
+      .footer-legal p {
+        margin: 0.25rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="nav-inner">
+        <a class="nav-brand" href="/" aria-label="45Days home">
+          <img class="nav-logo" src="/TLI_Logo.png" alt="The Learning Index" width="48" height="48" />
+          <span class="nav-title">45Days</span>
+        </a>
+        <a class="btn-gold" href="#" data-stripe-cta>Start Free Trial</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h1 class="hero-headline">Never miss a 45-day deadline again.</h1>
+          <p class="hero-sub">
+            45Days tracks instructional day countdowns for every student on your caseload — automatically skipping
+            holidays, breaks, and non-school days. Built by a diagnostician, for diagnosticians.
+          </p>
+          <p class="hero-proof">Counts real instructional days — not calendar days</p>
+          <p class="hero-proof">Built on the actual Texas 45-day compliance standard</p>
+          <div class="hero-cta-wrap">
+            <a class="btn-gold btn-gold-lg" href="#" data-stripe-cta>Start Your Free 30-Day Trial</a>
+            <p class="hero-note">No charge for 30 days. $19 after trial. Cancel anytime.</p>
+          </div>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Live preview</div>
+          <div class="mockup">
+            <div class="mockup-title">Caseload dashboard</div>
+            <div class="mock-row">
+              <div class="mock-avatar">M.R.</div>
+              <div class="mock-meta">
+                <div class="mock-name">M.R.</div>
+                <div class="mock-sub">Consent Sep 4, 2025</div>
+              </div>
+              <span class="pill pill--ok">32 Days Left</span>
+            </div>
+            <div class="mock-row">
+              <div class="mock-avatar">J.T.</div>
+              <div class="mock-meta">
+                <div class="mock-name">J.T.</div>
+                <div class="mock-sub">Consent Aug 22, 2025</div>
+              </div>
+              <span class="pill pill--warn">18 Days Left</span>
+            </div>
+            <div class="mock-row">
+              <div class="mock-avatar">A.L.</div>
+              <div class="mock-meta">
+                <div class="mock-name">A.L.</div>
+                <div class="mock-sub">Consent Sep 12, 2025</div>
+              </div>
+              <span class="pill pill--urgent">7 Days Left</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section strip reveal">
+      <div class="section-inner cards-3">
+        <div class="card-pain">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <path d="M8 10h8M8 14h5" />
+          </svg>
+          <h3>Counting calendar days?</h3>
+          <p>
+            The 45-day rule counts instructional days only. Missing holidays and breaks puts you out of compliance
+            without realizing it.
+          </p>
+        </div>
+        <div class="card-pain">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M4 6h16M4 12h10M4 18h14" />
+          </svg>
+          <h3>Juggling spreadsheets?</h3>
+          <p>
+            Tracking evals across a caseload in a spreadsheet is a compliance risk. One missed update can cost you.
+          </p>
+        </div>
+        <div class="card-pain">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          <h3>Serving multiple districts?</h3>
+          <p>
+            Each district has a different calendar. 45Days lets you set up a calendar per district so every countdown
+            is accurate.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section features reveal">
+      <div class="section-inner">
+        <h2>Everything you need. Nothing you don't.</h2>
+        <div class="grid-2">
+          <div class="feature">
+            <h3>Instructional day countdown</h3>
+            <p>
+              Set your district calendar once and 45Days counts only real school days toward each deadline.
+              Color-coded urgency so you always know who needs attention first.
+            </p>
+          </div>
+          <div class="feature">
+            <h3>Per-student task lists</h3>
+            <p>
+              Every student gets a built-in eval checklist that auto-populates with the standard Texas FIE workflow.
+              Add custom tasks and check them off as you go.
+            </p>
+          </div>
+          <div class="feature">
+            <h3>Built-in planner</h3>
+            <p>
+              See all your eval due dates and ARD meetings on one calendar. Tasks with due dates automatically appear
+              so nothing slips through.
+            </p>
+          </div>
+          <div class="feature">
+            <h3>Multi-district support</h3>
+            <p>
+              Serve students across different districts? Set up a separate calendar for each one. Every countdown stays
+              accurate regardless of which district the student is in.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cred reveal">
+      <h2>Built by people who know what it costs to miss a deadline.</h2>
+      <p>
+        45Days was created by The Learning Index — a team led by an 18-year diagnostician veteran and a special
+        education technology specialist. We built the tool we wished we had.
+      </p>
+      <img class="cred-logo" src="/TLI_Logo.png" alt="The Learning Index" width="64" height="64" />
+    </section>
+
+    <section class="section pricing reveal">
+      <div class="section-inner">
+        <h2>Simple, honest pricing.</h2>
+        <div class="price-card">
+          <div class="price-row">
+            <span class="price-big">$19</span>
+            <span class="price-unit">/one-time</span>
+          </div>
+          <p class="price-sub">Beta launch price — first 90 days only. Goes to $29 after.</p>
+          <ul class="check-list">
+            <li>30-day free trial included</li>
+            <li>Full caseload management</li>
+            <li>Instructional day countdown engine</li>
+            <li>Per-student task lists</li>
+            <li>Multi-district calendar support</li>
+            <li>Built-in planner</li>
+            <li>One-click data backup</li>
+            <li>All future updates included</li>
+          </ul>
+          <a class="btn-gold btn-gold-block btn-gold-lg" href="#" data-stripe-cta
+            >Start Free Trial — No Surprise Charges</a
+          >
+          <p class="hero-note" style="color: var(--muted-dark); margin-top: 0.75rem; text-align: center">
+            Card required to hold your spot. No charge for 30 days.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip reveal" id="trial">
+      <h2>Ready to stop counting on your fingers?</h2>
+      <p class="sub">Start your free 30-day trial today. No charge until day 31.</p>
+      <form
+        class="trial-form"
+        name="trial-signup"
+        method="POST"
+        netlify
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        id="trial-form"
+      >
+        <input type="hidden" name="form-name" value="trial-signup" />
+        <p class="hidden" style="display: none">
+          <label>Don’t fill this out: <input name="bot-field" /></label>
+        </p>
+        <input
+          type="email"
+          name="email"
+          id="trial-email"
+          placeholder="Your school email"
+          required
+          autocomplete="email"
+        />
+        <button type="submit" class="btn-gold" style="min-height: 48px">Start Free Trial</button>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div style="display: flex; align-items: center">
+          <img class="footer-logo" src="/TLI_Logo.png" alt="The Learning Index" width="40" height="40" />
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </nav>
+        <div class="footer-legal">
+          <p>© 2026 The Learning Index LLC. All rights reserved.</p>
+          <p>45Days is not affiliated with or endorsed by any school district.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      ;(function () {
+        function trialUrl() {
+          return typeof STRIPE_TRIAL_LINK !== 'undefined' ? STRIPE_TRIAL_LINK : '#'
+        }
+        function withPrefilledEmail(email) {
+          var base = trialUrl()
+          var q = base.indexOf('?') >= 0 ? '&' : '?'
+          return base + q + 'prefilled_email=' + encodeURIComponent(email)
+        }
+        document.querySelectorAll('[data-stripe-cta]').forEach(function (el) {
+          el.setAttribute('href', trialUrl())
+        })
+
+        document.getElementById('trial-form').addEventListener('submit', function (e) {
+          e.preventDefault()
+          var input = document.getElementById('trial-email')
+          var email = input && input.value ? input.value.trim() : ''
+          if (!email) return
+          var body =
+            'form-name=' + encodeURIComponent('trial-signup') + '&email=' + encodeURIComponent(email)
+          fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body,
+          }).catch(function () {})
+          window.location.href = withPrefilledEmail(email)
+        })
+
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        if (!reduceMotion) {
+          document.querySelectorAll('.reveal').forEach(function (el) {
+            var io = new IntersectionObserver(
+              function (entries) {
+                entries.forEach(function (entry) {
+                  if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible')
+                    io.unobserve(entry.target)
+                  }
+                })
+              },
+              { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+            )
+            io.observe(el)
+          })
+        } else {
+          document.querySelectorAll('.reveal').forEach(function (el) {
+            el.classList.add('is-visible')
+          })
+        }
+      })()
+    </script>
+  </body>
+</html>

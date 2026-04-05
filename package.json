@@ -4,18 +4,25 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "stripe:setup": "node scripts/stripe-setup.mjs",
+    "stripe:webhook": "node scripts/stripe-register-webhook.mjs",
+    "prepare:public": "node scripts/prepare-public.cjs",
+    "predev": "npm run prepare:public",
+    "prebuild": "npm run prepare:public",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/merge-netlify.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "stripe": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

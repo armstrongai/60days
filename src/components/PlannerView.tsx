@@ -15,6 +15,7 @@ import {
 import { db, getDistrictCalendarById } from '../db'
 import type { PlannerGlobalCategory, PlannerGlobalTask } from '../types'
 import { getEvalDueInstructional } from '../instructionalDays'
+import { useLicense } from '../LicenseContext'
 
 type DayMarks = { evalInitials: string[]; meetingInitials: string[] }
 
@@ -22,6 +23,7 @@ const CORAL = '#E87A5D'
 const PURPLE = '#7C3AED'
 
 export const PlannerView: FC = () => {
+  const { canEditCaseload } = useLicense()
   const [cursor, setCursor] = useState(() => new Date())
   const [globalText, setGlobalText] = useState('')
   const [globalDue, setGlobalDue] = useState('')
@@ -69,7 +71,7 @@ export const PlannerView: FC = () => {
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd })
 
   const addGlobalTask = async () => {
-    if (!globalText.trim() || !globalDue) return
+    if (!canEditCaseload || !globalText.trim() || !globalDue) return
     await db.plannerTasks.add({
       text: globalText.trim(),
       dueDate: globalDue,
@@ -82,7 +84,7 @@ export const PlannerView: FC = () => {
   }
 
   const toggleGlobal = async (t: PlannerGlobalTask) => {
-    if (!t.id) return
+    if (!canEditCaseload || !t.id) return
     await db.plannerTasks.update(t.id, { completed: !t.completed })
   }
 
@@ -187,20 +189,23 @@ export const PlannerView: FC = () => {
         <h3 className="font-semibold text-navy">Global to-do list</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           <input
-            className="min-w-[8rem] flex-1 rounded border border-navy/20 px-2 py-1.5 text-sm"
+            className="min-w-[8rem] flex-1 rounded border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
             placeholder="Task"
             value={globalText}
+            disabled={!canEditCaseload}
             onChange={(e) => setGlobalText(e.target.value)}
           />
           <input
             type="date"
-            className="rounded border border-navy/20 px-2 py-1.5 text-sm"
+            className="rounded border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
             value={globalDue}
+            disabled={!canEditCaseload}
             onChange={(e) => setGlobalDue(e.target.value)}
           />
           <select
-            className="rounded border border-navy/20 px-2 py-1.5 text-sm"
+            className="rounded border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
             value={globalCat}
+            disabled={!canEditCaseload}
             onChange={(e) => setGlobalCat(e.target.value as PlannerGlobalCategory)}
           >
             <option value="Eval">Eval</option>
@@ -210,8 +215,9 @@ export const PlannerView: FC = () => {
           </select>
           <button
             type="button"
-            className="rounded bg-navy px-3 py-1.5 text-sm text-white"
+            className="rounded bg-navy px-3 py-1.5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
             onClick={addGlobalTask}
+            disabled={!canEditCaseload}
           >
             Add
           </button>
@@ -225,6 +231,7 @@ export const PlannerView: FC = () => {
               <input
                 type="checkbox"
                 checked={false}
+                disabled={!canEditCaseload}
                 onChange={() => toggleGlobal(t)}
               />
               <span className="text-navy">{t.text}</span>
@@ -249,6 +256,7 @@ export const PlannerView: FC = () => {
                     <input
                       type="checkbox"
                       checked
+                      disabled={!canEditCaseload}
                       onChange={() => toggleGlobal(t)}
                     />
                     {t.text}

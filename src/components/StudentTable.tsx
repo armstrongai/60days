@@ -8,6 +8,7 @@ import clsx from 'clsx'
 
 interface Props {
   students: EnrichedStudent[]
+  canEdit?: boolean
   onEdit: (student: StudentRecord) => void
   onArchive: (student: StudentRecord) => void
 }
@@ -24,7 +25,12 @@ function instructionalPillClass(tier: EnrichedStudent['instructionalTier']) {
   return 'border-emerald-500 bg-emerald-50 text-emerald-900'
 }
 
-export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
+export const StudentTable: FC<Props> = ({
+  students,
+  canEdit = true,
+  onEdit,
+  onArchive,
+}) => {
   if (!students.length) {
     return (
       <div className="rounded-lg border border-dashed border-navy/20 bg-white px-6 py-10 text-center">
@@ -124,15 +130,17 @@ export const StudentTable: FC<Props> = ({ students, onEdit, onArchive }) => {
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
-                      className="rounded-md border border-navy/20 px-2 py-1 text-xs font-medium text-navy hover:bg-navy/5"
+                      className="rounded-md border border-navy/20 px-2 py-1 text-xs font-medium text-navy hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => s.id && onEdit(s)}
+                      disabled={!canEdit}
                     >
                       Edit
                     </button>
                     <button
                       type="button"
-                      className="rounded-md border border-navy/20 px-2 py-1 text-xs font-medium text-navy hover:bg-navy/5"
+                      className="rounded-md border border-navy/20 px-2 py-1 text-xs font-medium text-navy hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => s.id && onArchive(s)}
+                      disabled={!canEdit}
                     >
                       Archive
                     </button>

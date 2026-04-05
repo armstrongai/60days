@@ -8,7 +8,13 @@ import {
   instantiateTasksForNewStudent,
   linkStudentTaskToPlanner,
 } from './db'
-import type { DisabilityArea, DistrictCalendarRecord, Stage, StudentRecord } from './types'
+import type {
+  DisabilityArea,
+  DistrictCalendarRecord,
+  Stage,
+  StudentRecord,
+  UserProfileRecord,
+} from './types'
 import {
   calculateFiiieDueDate,
   calculateArdDueDate,
@@ -309,6 +315,7 @@ export async function backupAll() {
   const taskTemplate = await db.taskTemplate.get('default')
   const plannerTasks = await db.plannerTasks.toArray()
   const plannerMeetingLinks = await db.plannerMeetingLinks.toArray()
+  const userProfile = await db.userProfile.get('default')
   const legacyCalendar = await getDistrictCalendar()
   return {
     students,
@@ -316,6 +323,7 @@ export async function backupAll() {
     taskTemplate,
     plannerTasks,
     plannerMeetingLinks,
+    userProfile: userProfile ?? undefined,
     districtCalendar: legacyCalendar,
   }
 }
@@ -326,6 +334,7 @@ export interface BackupPayload {
   taskTemplate?: { id: string; tasks: { text: string }[] }
   plannerTasks?: import('./types').PlannerGlobalTask[]
   plannerMeetingLinks?: import('./types').PlannerMeetingLink[]
+  userProfile?: UserProfileRecord
   districtCalendar?: { nonSchoolDays: string[] }
 }
 
@@ -343,12 +352,14 @@ export async function restoreFromBackup(
         db.taskTemplate,
         db.plannerTasks,
         db.plannerMeetingLinks,
+        db.userProfile,
       ],
       async () => {
         await db.students.clear()
         await db.districtCalendars.clear()
         await db.plannerTasks.clear()
         await db.plannerMeetingLinks.clear()
+        await db.userProfile.clear()
         await db.students.bulkAdd(payload.students)
         if (payload.districtCalendars?.length) {
           await db.districtCalendars.bulkAdd(payload.districtCalendars)
@@ -361,6 +372,9 @@ export async function restoreFromBackup(
         }
         if (payload.plannerMeetingLinks?.length) {
           await db.plannerMeetingLinks.bulkAdd(payload.plannerMeetingLinks as any)
+        }
+        if (payload.userProfile) {
+          await db.userProfile.put(payload.userProfile)
         }
         if (payload.districtCalendar?.nonSchoolDays) {
           await setDistrictCalendar(payload.districtCalendar.nonSchoolDays)
@@ -380,6 +394,9 @@ export async function restoreFromBackup(
     }
     if (payload.plannerMeetingLinks?.length) {
       await db.plannerMeetingLinks.bulkPut(payload.plannerMeetingLinks as any)
+    }
+    if (payload.userProfile) {
+      await db.userProfile.put(payload.userProfile)
     }
     if (payload.districtCalendar?.nonSchoolDays?.length) {
       const existing = await getDistrictCalendar()

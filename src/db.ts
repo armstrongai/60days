@@ -6,6 +6,7 @@ import type {
   StudentRecord,
   StudentTask,
   TaskTemplateRecord,
+  UserProfileRecord,
 } from './types'
 import { DEFAULT_TASK_TEMPLATE_TEXTS } from './taskDefaults'
 
@@ -23,6 +24,7 @@ export interface Database extends Dexie {
   taskTemplate: EntityTable<TaskTemplateRecord, 'id'>
   plannerTasks: EntityTable<PlannerGlobalTask, 'id'>
   plannerMeetingLinks: EntityTable<PlannerMeetingLink, 'id'>
+  userProfile: EntityTable<UserProfileRecord, 'id'>
 }
 
 export const db = new Dexie('45DaysDB') as Database
@@ -100,6 +102,17 @@ db.version(3).stores({
       tasks,
     })
   }
+})
+
+db.version(4).stores({
+  students:
+    '++id, initials, studentId, grade, evaluationType, referralDate, deadlineDate, stage, archived, districtCalendarId',
+  settings: 'key',
+  districtCalendars: '++id, name, startDate, endDate',
+  taskTemplate: 'id',
+  plannerTasks: '++id, dueDate, completed, createdAt',
+  plannerMeetingLinks: '++id, studentId, dueDate',
+  userProfile: 'id',
 })
 
 function newId(): string {

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useStudents, type StudentsFilterState } from './useStudents'
 import type { Stage, StudentRecord } from './types'
+import { useLicense } from './LicenseContext'
+import { openStripeBillingPortal } from './license'
 import { StatCards } from './components/StatCards'
 import { StudentTable } from './components/StudentTable'
 import { AddEditStudentModal } from './components/AddEditStudentModal'
@@ -44,7 +46,7 @@ function Header({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <img
-              src="/tli-logo.png"
+              src={`${import.meta.env.BASE_URL}tli-logo.png`}
               alt="The Learning Index"
               className="h-9 w-9 shrink-0 rounded-full object-contain"
             />
@@ -91,7 +93,79 @@ function Header({
   )
 }
 
+function LicenseBanners() {
+  const {
+    isTrial,
+    isExpired,
+    showBillingPastDueWarning,
+    trialDaysLeft,
+    stripeTrialPaymentLink,
+  } = useLicense()
+
+  if (showBillingPastDueWarning && !isExpired) {
+    return (
+      <div className="border-b border-amber-700/40 bg-amber-50 px-4 py-3 text-amber-950 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium">
+            We had trouble processing your payment. Please update your billing info to keep
+            your access.
+          </p>
+          <button
+            type="button"
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light"
+            onClick={() => void openStripeBillingPortal()}
+          >
+            Update billing
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isExpired) {
+    return (
+      <div className="border-b border-amber-800/30 bg-amber-100 px-4 py-3 text-amber-950 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium">
+            Your free trial has ended. Upgrade to continue managing your caseload.
+          </p>
+          <a
+            href={stripeTrialPaymentLink}
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light"
+          >
+            Upgrade now
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  if (isTrial) {
+    return (
+      <div className="border-b border-navy/15 bg-tli-bg px-4 py-2.5 text-navy sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm">
+            You have{' '}
+            <span className="font-semibold">{trialDaysLeft}</span> day
+            {trialDaysLeft === 1 ? '' : 's'} left in your free trial — upgrade to keep
+            your data and access.
+          </p>
+          <a
+            href={stripeTrialPaymentLink}
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-md border border-navy/25 bg-white px-3 py-1.5 text-sm font-semibold text-navy hover:bg-navy/5"
+          >
+            Upgrade now
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
 function App() {
+  const { canEditCaseload } = useLicense()
   const [tab, setTab] = useState<AppTab>('dashboard')
   const [filter, setFilter] = useState<StudentsFilterState>({ tab: 'all' })
   const { students, stats } = useStudents(filter)
@@ -134,6 +208,7 @@ function App() {
   return (
     <div className="min-h-dvh">
       <Header onBackup={handleBackup} tab={tab} onTab={setTab} />
+      <LicenseBanners />
 
       {tab === 'dashboard' && (
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
@@ -150,8 +225,9 @@ function App() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-light"
+                  className="rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={openAdd}
+                  disabled={!canEditCaseload}
                 >
                   Add student
                 </button>
@@ -241,8 +317,9 @@ function App() {
                     <div className="mt-4">
                       <button
                         type="button"
-                        className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light"
+                        className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-50"
                         onClick={openAdd}
+                        disabled={!canEditCaseload}
                       >
                         Add your first student
                       </button>
@@ -251,6 +328,7 @@ function App() {
                 ) : (
                   <StudentTable
                     students={students}
+                    canEdit={canEditCaseload}
                     onEdit={openEdit}
                     onArchive={handleArchive}
                   />
@@ -258,7 +336,7 @@ function App() {
               </div>
 
               <div className="w-full max-w-xs flex-none space-y-3">
-                <DataPanel />
+                <DataPanel canMutate={canEditCaseload} />
               </div>
             </div>
           </div>

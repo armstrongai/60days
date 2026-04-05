@@ -17,6 +17,7 @@ import {
 import { getDaysRemaining } from '../instructionalDays'
 import { db, getDistrictCalendarById } from '../db'
 import { StudentTasksPanel } from './StudentTasksPanel'
+import { useLicense } from '../LicenseContext'
 
 interface Props {
   open: boolean
@@ -60,6 +61,7 @@ export const AddEditStudentModal: FC<Props> = ({
   onClose,
   initialStudent,
 }) => {
+  const { canEditCaseload } = useLicense()
   const calendars = useLiveQuery(() => db.districtCalendars.orderBy('id').toArray(), [])
 
   const [initials, setInitials] = useState('')
@@ -168,6 +170,7 @@ export const AddEditStudentModal: FC<Props> = ({
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (!canEditCaseload) return
     if (!initials.trim()) return
     if (evaluationType === 'Initial' && !referralDate) return
     if (evaluationType === 'Re-eval' && !referralDate && !customDueDate) return
@@ -202,7 +205,7 @@ export const AddEditStudentModal: FC<Props> = ({
   }
 
   const onStickyBlur = async () => {
-    if (!initialStudent?.id) return
+    if (!canEditCaseload || !initialStudent?.id) return
     await saveStudentStickyNote(initialStudent.id, stickyNote.trim())
   }
 
@@ -246,7 +249,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="text"
                   value={initials}
                   onChange={(e) => setInitials(e.target.value.toUpperCase())}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                   required
                 />
               </div>
@@ -261,7 +265,8 @@ export const AddEditStudentModal: FC<Props> = ({
                       e.target.value ? Number(e.target.value) : '',
                     )
                   }
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                   required
                 >
                   {(calendars ?? []).length === 0 && (
@@ -285,7 +290,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                   placeholder="e.g. Lincoln Elementary"
                 />
               </div>
@@ -297,7 +303,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="text"
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 />
               </div>
             </div>
@@ -309,7 +316,8 @@ export const AddEditStudentModal: FC<Props> = ({
                 onChange={(e) => setStickyNote(e.target.value)}
                 onBlur={onStickyBlur}
                 rows={2}
-                className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                disabled={!canEditCaseload}
                 placeholder={
                   initialStudent?.id
                     ? 'Saves automatically when you leave this field.'
@@ -324,7 +332,8 @@ export const AddEditStudentModal: FC<Props> = ({
                 <select
                   value={grade}
                   onChange={(e) => setGrade(e.target.value as Grade)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 >
                   {grades.map((g) => (
                     <option key={g} value={g}>
@@ -342,7 +351,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   onChange={(e) =>
                     setEvaluationType(e.target.value as 'Initial' | 'Re-eval')
                   }
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 >
                   <option value="Initial">Initial</option>
                   <option value="Re-eval">Re-eval</option>
@@ -355,7 +365,8 @@ export const AddEditStudentModal: FC<Props> = ({
                 <select
                   value={stage}
                   onChange={(e) => setStage(e.target.value as Stage)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 >
                   {stages.map((s) => (
                     <option key={s} value={s}>
@@ -376,7 +387,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="date"
                   value={referralDate}
                   onChange={(e) => setReferralDate(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                   required={referralRequired}
                 />
               </div>
@@ -389,7 +401,8 @@ export const AddEditStudentModal: FC<Props> = ({
                     type="date"
                     value={customDueDate}
                     onChange={(e) => setCustomDueDate(e.target.value)}
-                    className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                    disabled={!canEditCaseload}
                   />
                 </div>
               )}
@@ -404,7 +417,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   onChange={(e) =>
                     setAbsenceDays(Math.max(0, parseInt(e.target.value, 10) || 0))
                   }
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 />
               </div>
             </div>
@@ -418,7 +432,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="date"
                   value={consentDate}
                   onChange={(e) => setConsentDate(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 />
               </div>
               <div>
@@ -429,7 +444,8 @@ export const AddEditStudentModal: FC<Props> = ({
                   type="date"
                   value={evaluationDate}
                   onChange={(e) => setEvaluationDate(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                  className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                  disabled={!canEditCaseload}
                 />
               </div>
             </div>
@@ -483,12 +499,15 @@ export const AddEditStudentModal: FC<Props> = ({
                   return (
                     <label
                       key={area}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-md border border-navy/15 bg-white px-2 py-1.5 hover:bg-tli-bg"
+                      className={`flex items-center gap-1.5 rounded-md border border-navy/15 bg-white px-2 py-1.5 ${
+                        canEditCaseload ? 'cursor-pointer hover:bg-tli-bg' : 'cursor-not-allowed opacity-60'
+                      }`}
                     >
                       <input
                         type="checkbox"
                         className="h-3.5 w-3.5 rounded border-navy/30 text-navy"
                         checked={checked}
+                        disabled={!canEditCaseload}
                         onChange={(e) => {
                           if (e.target.checked) {
                             setDisabilityAreas([...disabilityAreas, area])
@@ -512,7 +531,8 @@ export const AddEditStudentModal: FC<Props> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded-md border border-navy/20 px-2 py-1.5 text-sm disabled:opacity-50"
+                disabled={!canEditCaseload}
                 placeholder="Short context, key dates, or reminders."
               />
             </div>
@@ -521,6 +541,7 @@ export const AddEditStudentModal: FC<Props> = ({
               <StudentTasksPanel
                 studentId={initialStudent.id}
                 initials={initialStudent.initials}
+                canEdit={canEditCaseload}
               />
             )}
           </div>
@@ -535,7 +556,8 @@ export const AddEditStudentModal: FC<Props> = ({
             </button>
             <button
               type="submit"
-              className="rounded-md bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-light"
+              className="rounded-md bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!canEditCaseload}
             >
               Save
             </button>

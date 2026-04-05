@@ -39,6 +39,19 @@ export type DisabilityArea =
 export interface NonInstructionalDay {
   date: string
   label: string
+  /** When set, this day is part of a multi-day break; same id for all days in the range. */
+  breakGroupId?: string
+}
+
+export type PaymentStatus = 'trial' | 'active' | 'expired' | 'cancelled' | 'past_due'
+
+export interface UserProfileRecord {
+  id: string
+  email?: string
+  trialStartDate?: string
+  paymentStatus: PaymentStatus
+  /** Last licenses.updated_at seen from Supabase (for past_due grace; optional). */
+  licenseRowUpdatedAt?: string
 }
 
 /** One district calendar (multiple supported). */

@@ -8,9 +8,11 @@ import {
 
 interface Props {
   onAfterChange?: () => void
+  /** When false, restore and archive actions are disabled; backup always works. */
+  canMutate?: boolean
 }
 
-export const DataPanel: FC<Props> = ({ onAfterChange }) => {
+export const DataPanel: FC<Props> = ({ onAfterChange, canMutate = true }) => {
   const handleBackup = async () => {
     const data = await backupAll()
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -72,21 +74,24 @@ export const DataPanel: FC<Props> = ({ onAfterChange }) => {
         <button
           type="button"
           onClick={() => handleRestore('merge')}
-          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
+          disabled={!canMutate}
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Restore (merge)
         </button>
         <button
           type="button"
           onClick={() => handleRestore('replace')}
-          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
+          disabled={!canMutate}
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Restore (replace all)
         </button>
         <button
           type="button"
           onClick={handleArchiveCompleted}
-          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5"
+          disabled={!canMutate}
+          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-medium text-navy hover:bg-navy/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Archive completed cases
         </button>

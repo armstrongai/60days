@@ -10,9 +10,15 @@
     />
     <meta name="theme-color" content="#0f172a" />
     <title>45Days</title>
+    <!-- Local: copy public/config.example.js → public/config.js. Netlify: inject via build env. -->
+    <script>
+      window.__45DAYS_CONFIG__ = window.__45DAYS_CONFIG__ || {}
+    </script>
+    <script type="module" src="/config.js"></script>
   </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/supabase.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
